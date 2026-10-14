@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NEON DRIFT</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+<style>
+:root{--c:#00f0ff;--m:#ff2bd6;--y:#fff200;--l:#9dff00;--bg:#07021a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;font-family:Orbitron,'Trebuchet MS',sans-serif;color:#fff}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+.scr{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:12px;background:radial-gradient(#0000,#07021acc);overflow:auto}
+.scr.on{display:flex;animation:in .5s ease both}
+@keyframes in{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:none}}
+h1{font-size:clamp(36px,10vw,92px);line-height:1;margin:0;font-weight:900;letter-spacing:.06em;text-shadow:0 0 8px var(--m),0 0 28px var(--m),0 0 70px var(--c);animation:fl 3s infinite}
+h2{margin:0;color:var(--y);text-shadow:0 0 14px var(--y)}
+@keyframes fl{0%,90%,100%{opacity:1}92%{opacity:.5}94%{opacity:.95}96%{opacity:.4}}
+.sub{color:var(--c);letter-spacing:.2em;font-size:13px;margin:0;text-shadow:0 0 8px var(--c)}
+.btn{cursor:pointer;background:#0008;color:var(--c);border:2px solid var(--c);padding:12px 26px;font:inherit;font-size:16px;letter-spacing:.12em;border-radius:6px;box-shadow:0 0 14px var(--c),inset 0 0 14px #00f0ff44;transition:.2s;margin:4px}
+.btn:hover,.btn.act{background:var(--c);color:#000;transform:scale(1.06)}
+.btn.m{color:var(--m);border-color:var(--m);box-shadow:0 0 14px var(--m),inset 0 0 14px #ff2bd644}
+.btn.m:hover{background:var(--m);color:#000}
+.cards{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:1000px}
+.card{width:176px;padding:14px;border:2px solid var(--k);border-radius:10px;background:#12063acc;cursor:pointer;box-shadow:0 0 16px var(--k);transition:.2s;text-align:left}
+.card:hover{transform:translateY(-6px) scale(1.04)}
+.card b{color:var(--k);display:block;font-size:13px;margin-bottom:6px}
+.card small{display:block;font:12px/1.35 'Trebuchet MS',sans-serif;opacity:.85}
+#hud{position:fixed;inset:0;pointer-events:none;display:none}
+.hr{display:flex;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px 0}
+.hb{padding:8px 14px;border:2px solid var(--c);background:#0009;border-radius:8px;font-size:13px;text-shadow:0 0 8px var(--c);box-shadow:0 0 12px var(--c)}
+.hb b{font-size:34px;color:var(--y);text-shadow:0 0 14px var(--y);margin-right:6px}
+#cd{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-weight:900;font-size:clamp(80px,22vw,220px);color:var(--y);text-shadow:0 0 30px var(--y),0 0 80px var(--m)}
+#cd span{animation:pop .9s ease-out both}
+@keyframes pop{from{transform:scale(2.4);opacity:0}30%{opacity:1}to{transform:scale(.9);opacity:.2}}
+#qz{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:12px;background:#07021ad9;z-index:5;overflow:auto}
+#qz.on{display:flex;animation:in .3s ease both}
+.qb{max-width:640px;width:100%;border:2px solid var(--m);border-radius:12px;background:#12063af2;padding:18px;box-shadow:0 0 30px var(--m);text-align:left;margin:auto}
+.qb .tag{color:var(--l);font-size:12px;letter-spacing:.2em;margin:0 0 10px;text-shadow:0 0 8px var(--l)}
+.qb h3{margin:0 0 14px;font:600 clamp(16px,3.8vw,22px)/1.35 'Trebuchet MS',sans-serif;color:#fff}
+.qo{display:block;width:100%;text-align:left;margin:8px 0;padding:11px 14px;font:15px/1.3 'Trebuchet MS',sans-serif;color:var(--c);background:#0008;border:2px solid var(--c);border-radius:8px;cursor:pointer;transition:.15s}
+.qo:hover:not(:disabled){background:var(--c);color:#000}
+.qo b{font-family:Orbitron,sans-serif;margin-right:10px}
+.qo.ok{background:var(--l);border-color:var(--l);color:#000}
+.qo.no{background:#ff1744;border-color:#ff1744;color:#fff}
+.qo:disabled{cursor:default}
+.qx{margin-top:12px;font:14px/1.45 'Trebuchet MS',sans-serif}
+@media (prefers-reduced-motion:reduce){h1,.scr.on,#cd span,#qz.on{animation:none}}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="hud"><div class="hr"><div class="hb" id="h1"></div><div class="hb" id="h2"></div><div class="hb" id="h3"></div></div></div>
+<div id="cd"></div>
+<div id="qz"></div>
+<div class="scr on" id="s0"><h1>NEON<br>DRIFT</h1><p class="sub">CARRERAS ARCADE VAPORWAVE</p>
+<button class="btn" onclick="show('s1')">▶ JUGAR</button>
+<p class="sub">FLECHAS / WASD · ESC = MENÚ</p>
+<p class="sub" style="color:var(--l);text-shadow:0 0 8px var(--l)">⚡ PASA POR LOS ACELERADORES «?» Y RESPONDE BIEN PARA GANAR VELOCIDAD</p></div>
+<div class="scr" id="s1"><h2>ELIGE TU CIRCUITO</h2><div class="cards" id="cards"></div>
+<div id="dfs"></div><button class="btn m" onclick="show('s0')">◀ VOLVER</button></div>
+<div class="scr" id="s2"><h1 id="et"></h1><p class="sub" id="ed"></p>
+<div><button class="btn" id="b1">↻ REINTENTAR</button><button class="btn m" id="b2">SIGUIENTE ▶</button><button class="btn" onclick="show('s1')">NIVELES</button></div></div>
+<script>
+const $=i=>document.getElementById(i),cv=$('cv'),cx=cv.getContext('2d');
+let W,H;const rs=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};addEventListener('resize',rs);rs();
+
+/* ---------- NIVELES: P = puntos de control (curva suave cerrada); w = ancho; sp = velocidad;
+   grip = agarre lateral; mov = obstáculos móviles [pos,vel,fase]; las = láseres [pos,período];
+   well = pozos de gravedad [pos,desvío,signo]; pad = aceleradores [pos,desvío] (pos = fracción de la pista) ---------- */
+const LV=[
+{n:'NEÓN CLÁSICO',d:'Velocidad pura: curvas cerradas, aceleradores con preguntas y obstáculos móviles.',h:180,w:190,laps:3,sp:1,grip:9,
+ P:[[0,0],[500,-60],[1000,0],[1300,300],[1100,650],[700,550],[450,800],[0,900],[-400,700],[-450,300]],
+ mov:[[.12,1.6,0],[.3,1.2,2],[.5,1.8,1],[.7,1.4,4],[.88,1.7,3]],pad:[[.05,0],[.22,.5],[.45,-.5],[.62,0],[.8,.4]]},
+{n:'CIBER-GLITCH',d:'Laberinto de muros que parpadean y cambian de ancho. Esquiva virus y láseres.',h:95,w:140,laps:2,sp:.75,grip:9,solid:1,gl:1,
+ P:[[0,0],[450,0],[450,250],[100,250],[100,500],[600,500],[600,750],[-200,750],[-200,400],[-450,400],[-450,0]],
+ las:[[.1,2],[.22,2.4],[.35,1.8],[.5,2.2],[.63,2],[.78,2.6],[.9,1.9]],mov:[[.16,2.2,0],[.43,2.6,1],[.7,2.4,2]],pad:[[.3,0],[.56,0]]},
+{n:'GRAVEDAD ZERO',d:'Pista flotante: derrapas muchísimo, pozos gravitacionales y el borde es un abismo.',h:270,w:260,laps:2,sp:1.05,grip:.5,fall:1,
+ P:[[0,0],[600,-100],[1200,100],[1500,500],[1000,900],[400,700],[-100,1000],[-700,800],[-800,300],[-400,100]],
+ well:[[.15,.6,1],[.3,-.6,-1],[.5,.5,1],[.68,-.5,-1],[.85,.6,1]],pad:[[.08,0],[.4,0],[.6,0],[.92,0]]},
+{n:'LLUVIA DE METEORITOS',d:'Contrarreloj de 80 s: esquiva los meteoritos que caen del cielo.',h:40,w:250,laps:2,sp:1,grip:9,met:1,tl:80,
+ P:[[0,0],[700,0],[1200,300],[1200,800],[700,1100],[0,1100],[-500,800],[-500,300]],pad:[[.1,0],[.35,0],[.6,0],[.85,0]]},
+{n:'GRAN FINAL',d:'Hyper-speed psicodélico, pasajes estrechos, dificultad máxima.',h:320,w:140,laps:3,sp:1.2,grip:9,solid:1,psy:1,
+ P:[[0,0],[600,-150],[1200,0],[1500,350],[1250,700],[800,500],[500,850],[900,1150],[300,1400],[-300,1100],[-250,650],[-700,500],[-800,100],[-400,-100]],
+ mov:[[.2,2.8,0],[.55,3,1],[.8,3.2,2]],las:[[.35,1.6],[.7,1.5]],pad:[[.1,0],[.25,0],[.45,.4],[.62,-.4],[.85,0]]}];
+const DIF=[{n:'FÁCIL',s:.8,e:.5},{n:'NORMAL',s:.92,e:.25},{n:'DIFÍCIL',s:1.02,e:.1}];
+
+let L=null,pts,T,cum,N,len,HW=100,state='menu',lv=0,diff=1,T0=0,rt=0,cd=3,pl,ai,res=0,endT=0,
+cam={x:0,y:0},sh=0,parts=[],mets=[],mT=0,keys={},best={},ob={mov:[],well:[]},pu=[],au=[],qa=0,qn=0,cq=null,deck=[];
+try{best=JSON.parse(localStorage.getItem('nd_best')||'{}')}catch(e){}
+const fmt=t=>Math.floor(t/60)+':'+(t%60).toFixed(2).padStart(5,'0'),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const wf=()=>L.gl?1+.22*Math.sin(T0*1.4):1;
+
+/* ---------- Pista: spline Catmull-Rom cerrada ---------- */
+function build(){const P=L.P,n=P.length;pts=[];
+ for(let i=0;i<n;i++){const a=P[(i+n-1)%n],b=P[i],c=P[(i+1)%n],d=P[(i+2)%n];
+  for(let s=0;s<14;s++){const t=s/14,t2=t*t,t3=t2*t;
+   pts.push([0,1].map(k=>.5*(2*b[k]+(-a[k]+c[k])*t+(2*a[k]-5*b[k]+4*c[k]-d[k])*t2+(-a[k]+3*b[k]-3*c[k]+d[k])*t3)))}}
+ N=pts.length;len=0;cum=[];
+ T=pts.map((p,i)=>{const q=pts[(i+1)%N],dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy);cum.push(len);len+=l;return[dx/l,dy/l]})}
+const at=(f,o)=>{const i=Math.floor(f*N)%N,p=pts[i],t=T[i];return{x:p[0]-t[1]*o,y:p[1]+t[0]*o,i,t}};
+
+const mk=(col,lat)=>{const t=T[3],p=pts[3];return{x:p[0]-t[1]*lat,y:p[1]+t[0]*lat,a:Math.atan2(t[1],t[0]),vx:0,vy:0,i:3,lap:0,dist:0,lat,col,boost:0,hit:0,pen:0,fin:0,ft:0,tr:[],mul:1,mT:0,md:1,off:0}};
+
+/* ---------- Partículas ---------- */
+function burst(x,y,c,n,s){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*s;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:.5+Math.random()*.5,m:1,c,s:2+Math.random()*4})}}
+const hurt=(c,k)=>{if(c.hit>0)return;c.vx*=k;c.vy*=k;c.hit=.9;burst(c.x,c.y,'#ff2bd6',14,260);if(c===pl)sh=12};
+
+/* ---------- Posición en pista (índice más cercano, vuelta, lateral) ---------- */
+function near(c){let b=1e18,bi=c.i;
+ for(let o=-20;o<=20;o++){const i=(c.i+o+N)%N,p=pts[i],d=(c.x-p[0])**2+(c.y-p[1])**2;if(d<b){b=d;bi=i}}
+ if(c.i>N*.75&&bi<N*.25)c.lap++;else if(c.i<N*.25&&bi>N*.75)c.lap--;
+ c.i=bi;const p=pts[bi],t=T[bi];c.lat=-(c.x-p[0])*t[1]+(c.y-p[1])*t[0];c.dist=c.lap*len+cum[bi]}
+
+/* ---------- Física del auto ---------- */
+function step(c,dt,thr,st){
+ const hx=Math.cos(c.a),hy=Math.sin(c.a);let f=c.vx*hx+c.vy*hy,l=-c.vx*hy+c.vy*hx;
+ const off=!L.solid&&!L.fall&&Math.abs(c.lat)>HW;
+ if(c.boost>0)c.boost-=dt;if(c.hit>0)c.hit-=dt;
+ const mx=520*L.sp*c.mul*(c.boost>0?1.5:1)*(off?.5:1);
+ if(c.pen>0){c.pen-=dt;thr=0;st=0;f*=.96}
+ if(thr>0&&f<mx)f+=430*thr*dt*(c.boost>0?2.5:1);
+ else if(thr<0)f+=thr*(f>0?900:300)*dt;
+ if(f>mx)f-=(f-mx)*dt*2;
+ if(L.grip>1&&thr==0)f-=Math.sign(f)*90*dt;
+ f*=Math.exp(-(L.grip>1?.25:.03)*dt);
+ c.a+=st*2.4*cl(f/220,-1,1)*dt;
+ l*=Math.exp(-L.grip*dt);
+ const nx=Math.cos(c.a),ny=Math.sin(c.a);c.vx=nx*f-ny*l;c.vy=ny*f+nx*l;
+ c.x+=c.vx*dt;c.y+=c.vy*dt;
+ if(Math.abs(l)>110&&Math.hypot(c.vx,c.vy)>150&&Math.random()<.7)parts.push({x:c.x-nx*14,y:c.y-ny*14,vx:(Math.random()-.5)*40,vy:(Math.random()-.5)*40,l:.7,m:.7,c:c===pl?'#00f0ff':'#ff1744',s:8+Math.random()*8,sm:1});
+ return f}
+
+/* ---------- Muros / abismo ---------- */
+function wall(c){const hl=HW-14;if(Math.abs(c.lat)<=hl)return;
+ const s=Math.sign(c.lat),t=T[c.i],p=pts[c.i],nx=-t[1],ny=t[0];
+ if(L.solid){const o=Math.abs(c.lat)-hl;c.x-=nx*s*o;c.y-=ny*s*o;const vn=c.vx*nx+c.vy*ny;
+  if(vn*s>0){c.vx=(c.vx-nx*vn*1.4)*.85;c.vy=(c.vy-ny*vn*1.4)*.85;burst(c.x,c.y,'#fff',5,140);if(c===pl)sh=Math.max(sh,5)}}
+ else if(L.fall&&Math.abs(c.lat)>HW+40){c.x=p[0];c.y=p[1];c.vx=c.vy=0;c.a=Math.atan2(t[1],t[0]);c.pen=1.2;c.tr=[];burst(c.x,c.y,'#9d5cff',30,300)}}
+
+/* ---------- Preguntas turbo: ciencias naturales (ecosistemas y cadena alimentaria). La opción correcta va PRIMERA y se baraja al mostrarla ---------- */
+const Q=[
+{q:"¿Qué nivel trófico ocupan los productores (plantas y algas) en una cadena alimentaria?",o:["El primero, porque fabrican su propio alimento por fotosíntesis","El segundo, porque se alimentan de herbívoros","El tercero, porque consumen materia orgánica muerta","El último, porque dependen de los carnívoros"],e:"Los productores son autótrofos: transforman energía solar en materia orgánica y son la base de toda cadena."},
+{q:"Un conejo que come pasto es un:",o:["Consumidor primario","Productor","Consumidor secundario","Descomponedor"],e:"Los herbívoros se alimentan directamente de los productores, por eso son consumidores primarios."},
+{q:"¿Cuál es el consumidor secundario en la cadena: pasto → saltamontes → rana → serpiente → águila?",o:["La rana","El saltamontes","La serpiente","El águila"],e:"Pasto = productor; saltamontes = 1.º; rana = 2.º; serpiente = 3.º; águila = 4.º."},
+{q:"En la cadena pasto → saltamontes → rana → serpiente → águila, ¿quién es el consumidor terciario?",o:["La serpiente","La rana","El águila","El pasto"],e:"La serpiente se alimenta de un consumidor secundario (la rana), por lo que es consumidor terciario."},
+{q:"Según la regla del 10 %, si los productores almacenan 10 000 kJ, ¿cuánta energía llega aproximadamente a los consumidores secundarios?",o:["100 kJ","1 000 kJ","10 kJ","5 000 kJ"],e:"10 000 → 1 000 kJ (consumidores primarios) → 100 kJ (consumidores secundarios)."},
+{q:"¿Qué sucede con la energía a medida que asciende por los niveles tróficos?",o:["Disminuye, porque gran parte se pierde como calor y en procesos vitales","Aumenta, porque los depredadores son más grandes","Se mantiene igual en todos los niveles","Se recicla completamente dentro del ecosistema"],e:"La energía fluye en un solo sentido y se disipa como calor; por eso las pirámides de energía siempre son anchas en la base."},
+{q:"¿Por qué las cadenas alimentarias rara vez tienen más de 4 o 5 eslabones?",o:["Porque la energía disponible disminuye mucho en cada nivel","Porque los depredadores grandes no existen","Porque las plantas no producen suficiente oxígeno","Porque los descomponedores eliminan los eslabones superiores"],e:"Con cada transferencia solo pasa cerca del 10 % de la energía, así que en los niveles altos queda muy poca."},
+{q:"¿Cuál es la función principal de los descomponedores?",o:["Degradar materia orgánica muerta y devolver nutrientes al suelo","Fabricar alimento a partir de la luz solar","Cazar herbívoros para controlar sus poblaciones","Fijar el CO₂ atmosférico en azúcares"],e:"Hongos y bacterias cierran el ciclo de la materia: transforman restos orgánicos en nutrientes inorgánicos reutilizables."},
+{q:"¿Cuál de los siguientes es un factor abiótico de un ecosistema?",o:["La temperatura","Las bacterias del suelo","Los hongos","Los depredadores"],e:"Los factores abióticos son los componentes sin vida: temperatura, luz, agua, pH, suelo, etc."},
+{q:"¿Cuál es la diferencia entre hábitat y nicho ecológico?",o:["El hábitat es el lugar donde vive la especie; el nicho es el papel que cumple en el ecosistema","El hábitat es el papel de la especie; el nicho es el lugar donde vive","Ambos términos son sinónimos","El nicho solo describe qué come la especie y el hábitat solo el clima"],e:"El hábitat es la «dirección» y el nicho es la «profesión»: incluye alimentación, reproducción y relaciones con otras especies."},
+{q:"Las abejas obtienen néctar de las flores y, al mismo tiempo, las polinizan. Esta relación es:",o:["Mutualismo","Parasitismo","Depredación","Competencia"],e:"En el mutualismo ambas especies se benefician."},
+{q:"Una garrapata que se alimenta de la sangre de un perro establece una relación de:",o:["Parasitismo","Mutualismo","Comensalismo","Competencia"],e:"En el parasitismo un organismo se beneficia y perjudica a su hospedador sin matarlo de inmediato."},
+{q:"La rémora viaja adherida al tiburón y aprovecha los restos de comida sin perjudicarlo. Esta relación es:",o:["Comensalismo","Parasitismo","Mutualismo","Depredación"],e:"En el comensalismo una especie se beneficia y la otra ni se beneficia ni se perjudica."},
+{q:"Los leones y las hienas que cazan las mismas presas establecen una relación de:",o:["Competencia interespecífica","Mutualismo","Comensalismo","Competencia intraespecífica"],e:"Compiten por el mismo recurso, pero son especies diferentes: competencia interespecífica."},
+{q:"¿Qué es una red trófica?",o:["Un conjunto de cadenas alimentarias interconectadas","Una cadena alimentaria formada solo por plantas","La cantidad de energía que recibe un productor","Un ecosistema sin descomponedores"],e:"Casi ningún organismo come una sola cosa, por eso las cadenas se entrelazan formando redes."},
+{q:"¿Qué es la biomagnificación?",o:["El aumento de la concentración de una sustancia tóxica a medida que se asciende por los niveles tróficos","La pérdida de energía en cada eslabón de la cadena","El aumento del tamaño de los individuos en los niveles superiores","La dilución de contaminantes en el agua de un río"],e:"Sustancias persistentes como el DDT o el mercurio se acumulan en los tejidos y se concentran más en los depredadores tope."},
+{q:"¿Qué es una especie clave?",o:["Aquella cuya desaparición provoca cambios desproporcionados en el ecosistema","La especie más abundante del ecosistema","La especie de mayor tamaño","Toda especie introducida por el ser humano"],e:"Su efecto sobre la comunidad es mucho mayor que lo que sugiere su abundancia (por ejemplo, las nutrias marinas)."},
+{q:"¿Qué es la eutrofización?",o:["El exceso de nutrientes (nitratos y fosfatos) en el agua, que provoca proliferación de algas y falta de oxígeno","La disminución de la temperatura del agua en invierno","La evaporación excesiva de un lago","El aumento de la salinidad del mar"],e:"Al morir y descomponerse las algas, las bacterias consumen el oxígeno disuelto y mueren peces y otros organismos."},
+{q:"La sucesión ecológica primaria ocurre cuando:",o:["Un terreno sin suelo, como roca desnuda o lava enfriada, es colonizado por primera vez","Un bosque se regenera tras un incendio conservando su suelo","Una especie migra a otro continente","Un lago se congela en invierno"],e:"Comienza con organismos pioneros (líquenes y musgos) que forman el suelo; la sucesión secundaria parte de un suelo ya existente."},
+{q:"La capacidad de carga de un ecosistema es:",o:["El número máximo de individuos de una especie que el ambiente puede sostener","El número mínimo de individuos para que una especie no se extinga","La cantidad de especies diferentes que habitan en él","La velocidad a la que se reproduce una población"],e:"Está limitada por recursos como alimento, agua y espacio."},
+{q:"¿Qué proceso incorpora el carbono atmosférico a la materia orgánica de los seres vivos?",o:["La fotosíntesis","La respiración celular","La combustión","La fermentación"],e:"Los productores usan CO₂, agua y luz para sintetizar glucosa y liberar oxígeno."},
+{q:"¿Qué procesos devuelven CO₂ a la atmósfera?",o:["La respiración celular y la combustión","La fotosíntesis y la fijación de nitrógeno","La condensación y la precipitación","La polinización y la dispersión de semillas"],e:"Los seres vivos liberan CO₂ al respirar y la quema de materia orgánica o combustibles fósiles también lo emite."},
+{q:"¿Qué hacen las bacterias fijadoras de nitrógeno, como Rhizobium en las raíces de las leguminosas?",o:["Convierten el nitrógeno atmosférico en compuestos que las plantas pueden absorber","Producen oxígeno mediante fotosíntesis","Descomponen el CO₂ en carbono y oxígeno","Transforman el agua del suelo en nitrógeno gaseoso"],e:"Transforman el N₂ del aire en amonio, forma utilizable por las plantas, y así ingresa nitrógeno a las cadenas alimentarias."},
+{q:"¿Qué es un organismo autótrofo?",o:["El que fabrica su propia materia orgánica a partir de sustancias inorgánicas","El que se alimenta de otros seres vivos","El que descompone restos de organismos muertos","El que vive a costa de otro organismo"],e:"Las plantas, las algas y algunas bacterias son autótrofos."},
+{q:"¿Qué es un omnívoro?",o:["Un consumidor que se alimenta tanto de vegetales como de animales","Un consumidor que solo come plantas","Un consumidor que solo come carne","Un organismo que fabrica su propio alimento"],e:"Por eso un mismo omnívoro puede ocupar distintos niveles tróficos según lo que coma."},
+{q:"¿Cuál es la fuente de energía que sostiene a la mayoría de los ecosistemas de la Tierra?",o:["La luz solar","El calor del interior de la Tierra","El viento","Las mareas"],e:"La energía solar es captada por los productores mediante la fotosíntesis."},
+{q:"En un ecosistema, ¿qué ocurriría con mayor probabilidad si desaparecieran los depredadores de los herbívoros?",o:["Los herbívoros aumentarían en exceso y la vegetación sería sobreexplotada","Los herbívoros disminuirían por falta de competencia","La vegetación crecería sin ningún límite","No habría ningún cambio en el ecosistema"],e:"Los depredadores regulan las poblaciones de sus presas; sin ellos se rompe el equilibrio."},
+{q:"En la cadena pasto → saltamontes → rana → serpiente, si se eliminara la rana, lo más probable es que:",o:["Aumente la población de saltamontes y disminuya el alimento de la serpiente","Disminuyan los saltamontes y aumente el pasto","Aumente la población de serpientes","No cambie ninguna población"],e:"Al faltar el depredador de los saltamontes, estos aumentan; la serpiente pierde su presa y se ve afectada."},
+{q:"¿Qué es una especie invasora?",o:["Una especie introducida fuera de su área natural que causa daño a los ecosistemas","Cualquier especie que habita en una región desde hace miles de años","Una especie que migra cada año siguiendo el clima","Una especie que solo se alimenta de plantas"],e:"Al no tener depredadores ni competidores naturales, puede desplazar a las especies nativas (como el mejillón dorado en los ríos de la cuenca del Plata)."},
+{q:"En el Chaco paraguayo, ¿cuál de estos animales actúa como depredador tope?",o:["El yaguareté","El tatú (armadillo)","El saltamontes","El pasto"],e:"El yaguareté (Panthera onca) no tiene depredadores naturales y regula las poblaciones de sus presas."},
+{q:"¿Cuál de estos organismos es un detritívoro?",o:["La lombriz de tierra","El pasto","El zorro","La abeja"],e:"Los detritívoros fragmentan y consumen restos orgánicos, lo que facilita el trabajo de los descomponedores."},
+{q:"¿Qué es una comunidad en ecología?",o:["El conjunto de poblaciones de distintas especies que interactúan en un mismo lugar","El conjunto de individuos de una misma especie","El conjunto de factores abióticos de una región","El lugar donde vive una especie"],e:"Comunidad + factores abióticos = ecosistema."},
+{q:"Un ecosistema está formado por:",o:["La comunidad de seres vivos y el ambiente físico con el que interactúan","Solo los animales y las plantas de un lugar","Únicamente los factores abióticos de una zona","Todas las poblaciones de una misma especie"],e:"Incluye factores bióticos y abióticos en constante interacción."},
+{q:"¿En cuál de estos ecosistemas puede observarse una pirámide de biomasa invertida?",o:["En un ecosistema acuático dominado por fitoplancton","En un bosque tropical","En una pradera","En un desierto"],e:"El fitoplancton se reproduce tan rápido que, con poca biomasa en un instante dado, sostiene un zooplancton de mayor biomasa."},
+{q:"¿Qué bioma se caracteriza por el permafrost (suelo permanentemente congelado) y la ausencia de árboles altos?",o:["La tundra","La sabana","La selva tropical","El desierto cálido"],e:"En la tundra las bajas temperaturas limitan el crecimiento de la vegetación a musgos, líquenes y arbustos pequeños."},
+{q:"La productividad primaria neta de un ecosistema es:",o:["La energía almacenada por los productores después de descontar la que usan en su respiración","Toda la energía solar que llega al ecosistema","La energía que acumulan los herbívoros","La biomasa total de los descomponedores"],e:"Es la energía realmente disponible para los consumidores."},
+{q:"La biodiversidad se refiere a:",o:["La variedad de especies, de genes y de ecosistemas","Solo al número de individuos de una población","Únicamente a la cantidad de plantas de un lugar","A la masa total de seres vivos"],e:"Una alta biodiversidad suele aumentar la estabilidad y la resiliencia de un ecosistema."},
+{q:"¿Qué gas de efecto invernadero es emitido en grandes cantidades por la quema de combustibles fósiles?",o:["El dióxido de carbono (CO₂)","El oxígeno (O₂)","El nitrógeno (N₂)","El argón (Ar)"],e:"El exceso de CO₂ retiene calor en la atmósfera y contribuye al calentamiento global."},
+{q:"La resiliencia de un ecosistema es su capacidad de:",o:["Recuperarse tras una perturbación como un incendio o una sequía","Aumentar indefinidamente su número de especies","Mantener siempre la misma temperatura","Evitar toda interacción con otros ecosistemas"],e:"Un ecosistema resiliente vuelve a un estado funcional similar al original después del disturbio."}
+];
+const AIP=[.5,.7,.9];
+function nextQ(){if(!deck.length)deck=Q.map((_,i)=>i).sort(()=>Math.random()-.5);return Q[deck.pop()]}
+function ask(){const q=nextQ(),o=q.o.map((t,i)=>({t,ok:!i})).sort(()=>Math.random()-.5);
+ cq={e:q.e,o,done:0,g:0};state='quiz';keys={};
+ $('qz').innerHTML=`<div class="qb"><p class="tag">⚡ PREGUNTA TURBO · CIENCIAS NATURALES</p><h3>${q.q}</h3>${o.map((x,i)=>`<button class="qo" onclick="ans(${i})"><b>${'ABCD'[i]}</b>${x.t}</button>`).join('')}<div class="qx" id="qx"></div></div>`;
+ $('qz').classList.add('on')}
+function ans(i){if(!cq||cq.done)return;cq.done=1;const g=cq.g=cq.o[i].ok?1:0;qn++;
+ document.querySelectorAll('.qo').forEach((b,j)=>{b.disabled=true;if(cq.o[j].ok)b.classList.add('ok');else if(j==i)b.classList.add('no')});
+ if(g){qa++;pl.boost=3.2}
+ $('qx').innerHTML=`<p style="color:${g?'#9dff00':'#ff2bd6'};margin:0 0 6px"><b>${g?'¡CORRECTO! ⚡ TURBO ACTIVADO':'INCORRECTO · SIN TURBO'}</b></p><p style="margin:0 0 12px">${cq.e}</p><button class="btn" onclick="resume()">CONTINUAR ▶</button>`}
+function resume(){if(!cq||!cq.done)return;$('qz').classList.remove('on');if(cq.g)burst(pl.x,pl.y,'#9dff00',24,260);cq=null;state='race'}
+function qk(k){if(!cq)return;if(!cq.done){const n=k.length==1?('1234'.indexOf(k)>=0?'1234'.indexOf(k):'abcd'.indexOf(k)):-1;if(n>=0&&n<cq.o.length)ans(n)}else if(k=='enter'||k==' ')resume()}
+
+/* ---------- Obstáculos y efectos de nivel ---------- */
+function envUpd(dt){
+ ob.mov=(L.mov||[]).map(o=>{const t=at(o[0],Math.sin(T0*o[1]+o[2]*2)*.75*(HW-20));return{x:t.x,y:t.y}});
+ ob.well=(L.well||[]).map(o=>{const t=at(o[0],o[1]*HW);return{x:t.x,y:t.y,s:o[2]}});
+ if(L.met){mT-=dt;if(mT<=0){mT=.4;const g=Math.random()<.6?pl:ai;mets.push({x:g.x+g.vx*.9+(Math.random()-.5)*280,y:g.y+g.vy*.9+(Math.random()-.5)*280,t:0,w:.9,r:62})}
+  mets.forEach(m=>{m.t+=dt;if(!m.d&&m.t>=m.w){m.d=1;burst(m.x,m.y,'#ffb300',30,350);[pl,ai].forEach(c=>{if(Math.hypot(c.x-m.x,c.y-m.y)<m.r){hurt(c,.3);c.pen=.5}})}});
+  mets=mets.filter(m=>m.t<m.w+.5)}}
+function carFx(c,dt){
+ ob.mov.forEach(o=>{if(Math.hypot(c.x-o.x,c.y-o.y)<28)hurt(c,.45)});
+ (L.las||[]).forEach(o=>{const li=Math.floor(o[0]*N);if(laserOn(o)&&Math.min(Math.abs(c.i-li),N-Math.abs(c.i-li))<=1)hurt(c,.3)});
+ ob.well.forEach(w=>{const dx=w.x-c.x,dy=w.y-c.y,d=Math.hypot(dx,dy);if(d<170&&d>1){const f=w.s*1100*(1-d/170)*dt;c.vx+=dx/d*f;c.vy+=dy/d*f}});
+ (L.pad||[]).forEach((o,k)=>{const t=at(o[0],o[1]*HW*.6);if(Math.hypot(c.x-t.x,c.y-t.y)>=42)return;
+  if(c===pl){if(state=='race'&&!res&&!pl.fin&&pu[k]!==pl.lap){pu[k]=pl.lap;ask()}}
+  else if(au[k]!==ai.lap){au[k]=ai.lap;if(Math.random()<AIP[diff]){c.boost=1.3;burst(c.x,c.y,'#9dff00',16,220)}}})}
+const laserOn=o=>(T0%o[1])<o[1]*.55;
+
+/* ---------- IA: sigue la línea con errores ocasionales y velocidad según dificultad ---------- */
+function aiCtl(c,dt){const D=DIF[diff];
+ if(c.mT>0)c.mT-=dt;else if(Math.random()<D.e*dt){c.mT=.5+Math.random()*.5;c.md=Math.random()<.5?-1:1}
+ const f=c.vx*Math.cos(c.a)+c.vy*Math.sin(c.a),k=(c.i+Math.floor(5+Math.hypot(c.vx,c.vy)/70))%N,t=T[k],p=pts[k];
+ c.off=cl(c.off+(Math.random()-.5)*dt*90,-.5*HW,.5*HW);
+ let d=Math.atan2(p[1]+t[0]*c.off-c.y,p[0]-t[1]*c.off-c.x)-c.a;d=Math.atan2(Math.sin(d),Math.cos(d));
+ let st=cl(d*2.2,-1,1);
+ const a=T[c.i],b=T[(c.i+14)%N],cu=Math.abs(Math.atan2(b[1]*a[0]-b[0]*a[1],b[0]*a[0]+b[1]*a[1]));
+ const tg=520*L.sp*D.s*(1-Math.min(cu,1.2)*.3)*(L.grip<1?.8:1);
+ let thr=f<tg?1:f>tg*1.15?-.3:0;
+ if(c.mT>0){st+=c.md*.7;thr=Math.min(thr,.3)}
+ return[thr,cl(st,-1,1)]}
+
+/* ---------- Flujo de partida ---------- */
+function show(id){document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id==id));
+ $('hud').style.display=id?'none':'block';$('qz').classList.remove('on');$('cd').innerHTML='';
+ if(id&&id!='s2'){state='menu';L=null}
+ if(id=='s1'){$('cards').innerHTML=LV.map((l,i)=>`<div class="card" style="--k:hsl(${l.h},100%,60%)" onclick="start(${i})"><b>${i+1}. ${l.n}</b><small>${l.d}</small><small>${l.laps} vueltas${best[i]?' · 🏆 '+fmt(best[i]):''}</small></div>`).join('');
+  $('dfs').innerHTML=DIF.map((d,i)=>`<button class="btn ${i==diff?'act':''}" onclick="diff=${i};show('s1')">${d.n}</button>`).join('')}}
+function start(i){lv=i;L=LV[i];build();pl=mk('#00f0ff',-35);ai=mk('#ff1744',35);
+ res=0;rt=0;cd=3;state='count';pu=[];au=[];qa=qn=0;cq=null;$('qz').classList.remove('on');parts=[];mets=[];mT=2;cam.x=pl.x;cam.y=pl.y;show(null)}
+function finish(){state='end';const w=res=='win',t=res=='time';
+ $('et').textContent=w?'¡VICTORIA!':t?'TIEMPO AGOTADO':'DERROTA';
+ $('et').style.color=w?'#9dff00':'#ff1744';
+ $('ed').textContent=(w?'TU TIEMPO '+fmt(pl.ft):t?'NO LLEGASTE A TIEMPO':'LA IA CRUZÓ PRIMERO')+' · 🧠 '+qa+'/'+qn+' RESPUESTAS CORRECTAS';
+ if(w&&(!best[lv]||pl.ft<best[lv])){best[lv]=pl.ft;try{localStorage.setItem('nd_best',JSON.stringify(best))}catch(e){}}
+ $('b1').onclick=()=>start(lv);$('b2').style.display=w&&lv<4?'':'none';$('b2').onclick=()=>start(lv+1);
+ $('hud').style.display='none';document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id=='s2'))}
+
+/* ---------- Actualización ---------- */
+function upd(dt){if(state=='quiz')return;T0+=dt;sh*=.9;
+ for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=dt;if(p.sm)p.s+=dt*20}parts=parts.filter(p=>p.l>0);
+ if(!L||state=='menu')return;
+ HW=L.w*wf()/2;
+ if(state=='count'){cd-=dt;const s=Math.ceil(cd),tx=cd>0?s:'¡YA!';if($('cd').dataset.v!=tx){$('cd').dataset.v=tx;$('cd').innerHTML='<span>'+tx+'</span>'}if(cd<=0)state='race'}
+ else if(state=='race'&&cd>-.8)cd-=dt;else if(cd<=-.8&&$('cd').innerHTML){$('cd').innerHTML='';$('cd').dataset.v=''}
+ if(state=='race'&&!res)rt+=dt;
+ if(state!='end'){envUpd(dt);
+  const go=state=='race';
+  const k=x=>keys[x];
+  let pt=go&&!pl.fin?(k('arrowup')||k('w')?1:0)-(k('arrowdown')||k('s')?1:0):0,ps=go&&!pl.fin?(k('arrowright')||k('d')?1:0)-(k('arrowleft')||k('a')?1:0):0;
+  if(DIF[diff].s<1)ai.mul=cl(1+(pl.dist-ai.dist)/4000,.92,1.08);
+  const ac=go&&!ai.fin?aiCtl(ai,dt):[0,0];
+  [[pl,pt,ps],[ai,ac[0],ac[1]]].forEach(([c,t,s])=>{
+   near(c);carFx(c,dt);step(c,dt,t,s);wall(c);
+   c.tr.push([c.x,c.y]);if(c.tr.length>30)c.tr.shift();
+   if(!c.fin&&c.lap>=L.laps){c.fin=1;c.ft=rt;if(!res){res=c===pl?'win':'lose';endT=1.2}}});
+  if(L.tl&&rt>L.tl&&!res){res='time';endT=.6}
+  if(res){endT-=dt;if(endT<=0&&state!='end')finish()}}
+ cam.x+=(pl.x+pl.vx*.25-cam.x)*Math.min(1,dt*6);cam.y+=(pl.y+pl.vy*.25-cam.y)*Math.min(1,dt*6);
+ if(state!='end'){const rank=pl.fin&&!ai.fin||(!ai.fin&&pl.dist>=ai.dist)?1:2,g=(pl.dist-ai.dist)/10;
+  $('h1').innerHTML=`<b>${rank}º</b>VUELTA ${Math.min(Math.max(pl.lap+1,1),L.laps)}/${L.laps}`;
+  $('h2').innerHTML=L.tl?`⏱ ${fmt(Math.max(0,L.tl-rt))}`:`⏱ ${fmt(rt)}`;$('h2').innerHTML+=`<br>🧠 ${qa}/${qn}`;
+  $('h3').innerHTML=`<span style="color:${g>=0?'#9dff00':'#ff1744'}">${g>=0?'▲ +':'▼ '}${g.toFixed(0)} m vs IA</span><br>${Math.round(Math.hypot(pl.vx,pl.vy)*.4)} km/h`}}
+
+/* ---------- Dibujo ---------- */
+function drawCar(c){cx.save();cx.translate(c.x,c.y);cx.rotate(c.a);
+ if(c.boost>0){cx.fillStyle='#fff';cx.shadowColor='#9dff00';cx.shadowBlur=25;cx.beginPath();cx.moveTo(-18,0);cx.lineTo(-48-Math.random()*14,0);cx.lineTo(-18,6);cx.lineTo(-18,-6);cx.fill()}
+ cx.shadowColor=c.col;cx.shadowBlur=22;cx.fillStyle=c.col;cx.globalAlpha=c.hit>0&&Math.floor(c.hit*20)%2?.4:1;
+ cx.beginPath();cx.moveTo(22,0);cx.lineTo(8,-10);cx.lineTo(-16,-11);cx.lineTo(-18,0);cx.lineTo(-16,11);cx.lineTo(8,10);cx.closePath();cx.fill();
+ cx.shadowBlur=0;cx.fillStyle='#07021a';cx.fillRect(-6,-6,12,12);cx.fillStyle='#fff';cx.fillRect(14,-7,3,3);cx.fillRect(14,4,3,3);cx.restore()}
+function draw(){
+ cx.setTransform(1,0,0,1,0,0);cx.globalAlpha=1;cx.fillStyle='#07021a';cx.fillRect(0,0,W,H);
+ const hue=L?(L.psy?(T0*80)%360:L.h):290+Math.sin(T0*.4)*40;
+ const g=cx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.7);g.addColorStop(0,`hsla(${hue+60},90%,${L&&L.psy?30:22}%,.5)`);g.addColorStop(1,'rgba(7,2,26,0)');cx.fillStyle=g;cx.fillRect(0,0,W,H);
+ let z=Math.min(W,H)/760;if(L)z*=1-.1*Math.min(1,Math.hypot(pl.vx,pl.vy)/700);
+ const cmx=L?cam.x:T0*80,cmy=L?cam.y:Math.sin(T0*.3)*120;
+ cx.save();cx.translate(W/2+(Math.random()-.5)*sh,H/2+(Math.random()-.5)*sh);cx.scale(z,z);cx.translate(-cmx,-cmy);
+ /* rejilla */
+ const gs=140,x0=Math.floor((cmx-W/2/z)/gs)*gs,y0=Math.floor((cmy-H/2/z)/gs)*gs;
+ cx.strokeStyle=`hsla(${hue+40},100%,60%,.2)`;cx.lineWidth=2;cx.beginPath();
+ for(let x=x0;x<cmx+W/2/z+gs;x+=gs){cx.moveTo(x,y0);cx.lineTo(x,cmy+H/2/z+gs)}
+ for(let y=y0;y<cmy+H/2/z+gs;y+=gs){cx.moveTo(x0,y);cx.lineTo(cmx+W/2/z+gs,y)}cx.stroke();
+ if(L){
+  /* pista */
+  const w=L.w*wf();let col=`hsl(${hue},100%,58%)`;
+  if(L.gl&&Math.random()<.08)col=['#ff2bd6','#9dff00','#fff200'][Math.floor(Math.random()*3)];
+  if(L.gl&&Math.random()<.05)cx.translate((Math.random()-.5)*10,0);
+  cx.lineJoin='round';cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.closePath();
+  cx.shadowBlur=26;cx.shadowColor=col;cx.strokeStyle=col;cx.lineWidth=w+10;cx.stroke();
+  cx.shadowBlur=0;cx.strokeStyle='#0b0426';cx.lineWidth=w-4;cx.stroke();
+  cx.setLineDash([24,32]);cx.strokeStyle='rgba(255,255,255,.2)';cx.lineWidth=3;cx.stroke();cx.setLineDash([]);
+  const sp=pts[0],st=T[0];cx.strokeStyle='#fff';cx.lineWidth=7;cx.beginPath();cx.moveTo(sp[0]+st[1]*w/2,sp[1]-st[0]*w/2);cx.lineTo(sp[0]-st[1]*w/2,sp[1]+st[0]*w/2);cx.stroke();
+  /* aceleradores */
+  (L.pad||[]).forEach((o,k)=>{const t=at(o[0],o[1]*HW*.6);cx.save();if(pu[k]===pl.lap)cx.globalAlpha=.25;cx.translate(t.x,t.y);cx.rotate(Math.atan2(t.t[1],t.t[0]));cx.shadowColor='#9dff00';cx.shadowBlur=18;cx.fillStyle='rgba(157,255,0,.3)';cx.fillRect(-28,-34,56,68);cx.fillStyle='#9dff00';cx.font='bold 44px sans-serif';cx.textAlign='center';cx.textBaseline='middle';cx.rotate(-Math.atan2(t.t[1],t.t[0]));cx.fillText('?',0,2);cx.restore()});
+  /* láseres */
+  (L.las||[]).forEach(o=>{const t=at(o[0],0),n=[-t.t[1],t.t[0]],on=laserOn(o);cx.beginPath();cx.moveTo(t.x+n[0]*w/2,t.y+n[1]*w/2);cx.lineTo(t.x-n[0]*w/2,t.y-n[1]*w/2);
+   cx.shadowColor='#ff2bd6';cx.shadowBlur=on?24:0;cx.strokeStyle=on?'#ff2bd6':'rgba(255,43,214,.25)';cx.lineWidth=on?6:2;cx.setLineDash(on?[]:[8,10]);cx.stroke();cx.setLineDash([]);cx.shadowBlur=0});
+  /* pozos de gravedad */
+  ob.well.forEach(o=>{const c=o.s>0?'157,92,255':'255,242,0';const gr=cx.createRadialGradient(o.x,o.y,0,o.x,o.y,170);gr.addColorStop(0,`rgba(${c},.55)`);gr.addColorStop(1,`rgba(${c},0)`);cx.fillStyle=gr;cx.beginPath();cx.arc(o.x,o.y,170,0,6.3);cx.fill();
+   cx.strokeStyle=`rgb(${c})`;cx.lineWidth=3;cx.beginPath();cx.arc(o.x,o.y,40+((T0*60*o.s)%130+130)%130*.9,0,6.3);cx.globalAlpha=.6;cx.stroke();cx.globalAlpha=1});
+  /* obstáculos móviles / virus */
+  ob.mov.forEach(o=>{cx.save();cx.translate(o.x,o.y);cx.shadowColor='#ff2bd6';cx.shadowBlur=22;cx.fillStyle='#ff2bd6';
+   if(L.gl){cx.rotate(T0*3);cx.fillRect(-14,-14,28,28);cx.fillStyle='#07021a';cx.fillRect(-6,-6,12,12)}else{cx.beginPath();cx.arc(0,0,16,0,6.3);cx.fill();cx.fillStyle='#fff200';cx.beginPath();cx.arc(0,0,6,0,6.3);cx.fill()}cx.restore()});
+  /* meteoritos */
+  mets.forEach(m=>{const p=m.t/m.w;if(m.t<m.w){cx.strokeStyle=`rgba(255,179,0,${.4+.4*Math.sin(m.t*25)})`;cx.lineWidth=4;cx.beginPath();cx.arc(m.x,m.y,m.r*p,0,6.3);cx.stroke();cx.beginPath();cx.arc(m.x,m.y,m.r,0,6.3);cx.stroke();
+    const dy=-(1-p)*900;cx.shadowColor='#ff6a00';cx.shadowBlur=30;cx.fillStyle='#ffb300';cx.beginPath();cx.arc(m.x,m.y+dy,14+20*p,0,6.3);cx.fill();cx.strokeStyle='rgba(255,106,0,.5)';cx.lineWidth=12;cx.beginPath();cx.moveTo(m.x,m.y+dy);cx.lineTo(m.x,m.y+dy-220);cx.stroke();cx.shadowBlur=0}
+   else{cx.fillStyle=`rgba(255,200,80,${1-(m.t-m.w)*2})`;cx.beginPath();cx.arc(m.x,m.y,m.r*(1+(m.t-m.w)),0,6.3);cx.fill()}});
+  /* estelas */
+  [ai,pl].forEach(c=>{cx.shadowColor=c.col;cx.shadowBlur=14;cx.strokeStyle=c.col;cx.lineCap='round';
+   for(let j=1;j<c.tr.length;j++){cx.globalAlpha=j/c.tr.length*.8;cx.lineWidth=(c.boost>0?9:5)*j/c.tr.length;cx.beginPath();cx.moveTo(c.tr[j-1][0],c.tr[j-1][1]);cx.lineTo(c.tr[j][0],c.tr[j][1]);cx.stroke()}cx.globalAlpha=1;cx.shadowBlur=0});
+  cx.globalCompositeOperation='lighter';
+  for(const p of parts){cx.globalAlpha=Math.max(0,p.l/p.m)*(p.sm?.45:1);cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.s,0,6.3);cx.fill()}
+  cx.globalCompositeOperation='source-over';cx.globalAlpha=1;
+  drawCar(ai);drawCar(pl)}
+ cx.restore()}
+
+/* ---------- Entrada y bucle ---------- */
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(state=='quiz'){if(k=='escape')show('s1');else qk(k);e.preventDefault();return}keys[k]=1;if(k.startsWith('arrow')||k==' ')e.preventDefault();if(k=='escape'&&L)show('s1')});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
+addEventListener('blur',()=>keys={});
+let last=0;(function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05);last=ts;upd(dt);draw()})(0);
+</script></body></html>
